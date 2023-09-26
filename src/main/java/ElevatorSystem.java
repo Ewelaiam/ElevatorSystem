@@ -19,8 +19,6 @@ public class ElevatorSystem {
 
     }
 
-    //                .filter(elevator -> elevator.getCurrentFloor() == floor && elevator.getDirection() == Direction.IDLE)
-
     private Optional<Elevator> findIdleElevatorOnTheFloor(int floor){
         List<Elevator> idleElevatorsOnTheFloor = elevators.stream()
                 .filter(elevator -> Direction.IDLE.equals(elevator.getDirection())
