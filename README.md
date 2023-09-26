@@ -30,11 +30,13 @@ When the elevator reaches the destination floor, it is set to idle.
 When the passenger is picked up, the elevator system asks for the floor where the passenger wants to go and adds it to the elevator queue.
 
 ## How to run
-Compile the project using the following command:
-```javac <name of the class>.java```
+The application can be run using the maven. 
 
-Run the project using the following command:
-```java <name of the class>```
+To build the jar file use the command: \
+`mvn package`
+
+Then to run the application use the command: \
+`java -jar target/ElevatorSystem-1.0-SNAPSHOT.jar`
 
 ## How to test
 The tests are written using the Spock framework. They are located in the `src/test/groovy` directory.
