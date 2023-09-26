@@ -12,12 +12,7 @@ public class Elevator {
     private final TreeSet<Integer> stops;
 
     public Elevator(int id, int currentFloor) {
-        this.id = id;
-        this.currentFloor = currentFloor;
-        this.destinationFloor = currentFloor;
-        this.direction = Direction.IDLE;
-
-        stops = new TreeSet<>();
+        this(id,currentFloor, currentFloor);
     }
 
     public Elevator(int id, int currentFloor, int destinationFloor){
@@ -51,6 +46,7 @@ public class Elevator {
             direction = Direction.UP;
         }
     }
+
     public void addStop(int floor) {
         stops.add(floor);
 

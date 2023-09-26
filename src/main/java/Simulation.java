@@ -4,7 +4,7 @@ public class Simulation {
     private int numberOfElevators;
     private int numberOfFloors;
 
-    private static Scanner scanner = new Scanner(System.in);
+    private Scanner scanner = new Scanner(System.in);
 
     private void setNumberOfElevators(){
         System.out.println(Command.NUMBER_OF_ELEVATORS);

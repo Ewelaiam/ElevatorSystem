@@ -51,6 +51,7 @@ class ElevatorSystemTest extends Specification {
         otherElevatorSystem.elevators[1].setDirection(Direction.UP)
         otherElevatorSystem.elevators[2].setDirection(Direction.DOWN)
         otherElevatorSystem.elevators[3].setDirection(Direction.DOWN)
+        otherElevatorSystem.elevators[2].addStop(0)
 
         when:
         otherElevatorSystem.callTheElevator(7, Direction.DOWN)

@@ -1,7 +1,4 @@
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Scanner;
+import java.util.*;
 
 public class ElevatorSystem {
     private final int numberOfFloors;
@@ -22,38 +19,34 @@ public class ElevatorSystem {
 
     }
 
-    private Elevator findIdleElevatorOnTheFloor(int floor){
+    //                .filter(elevator -> elevator.getCurrentFloor() == floor && elevator.getDirection() == Direction.IDLE)
+
+    private Optional<Elevator> findIdleElevatorOnTheFloor(int floor){
         List<Elevator> idleElevatorsOnTheFloor = elevators.stream()
-                .filter(elevator -> elevator.getCurrentFloor() == elevator.getDestinationFloor()
+                .filter(elevator -> Direction.IDLE.equals(elevator.getDirection())
                         && elevator.getCurrentFloor() == floor)
                 .toList();
-        return !idleElevatorsOnTheFloor.isEmpty() ? idleElevatorsOnTheFloor.get(0) : null;
+        return idleElevatorsOnTheFloor.isEmpty() ? Optional.empty() : Optional.ofNullable(idleElevatorsOnTheFloor.get(0));
     }
 
     private void addWaitingPersonForUp(int floor){
-        if(waitingPeopleForUp.containsKey(floor)){
-            waitingPeopleForUp.put(floor, waitingPeopleForUp.get(floor) + 1);
-        } else {
-            waitingPeopleForUp.put(floor, 1);
-        }
+        var newCounter = waitingPeopleForUp.getOrDefault(floor, 0);
+        waitingPeopleForUp.put(floor, newCounter + 1);
     }
 
     private void addWaitingPersonForDown(int floor){
-        if(waitingPeopleForDown.containsKey(floor)){
-            waitingPeopleForDown.put(floor, waitingPeopleForDown.get(floor) + 1);
-        } else {
-            waitingPeopleForDown.put(floor, 1);
-        }
+        var newCounter = waitingPeopleForDown.getOrDefault(floor, 0);
+        waitingPeopleForDown.put(floor, newCounter + 1);
     }
 
-    private Elevator findTheNearestElevator(List<Elevator> candidates, int floor, boolean isRightDirection){
-        Elevator nearestElevator = null;
+    private Optional<Elevator> findTheNearestElevator(List<Elevator> candidates, int floor, boolean isRightDirection){
+        Optional<Elevator> nearestElevator = Optional.empty();
         int minDistance = Integer.MAX_VALUE;
         for (Elevator candidate : candidates){
             int distance = countDistance(candidate, floor, isRightDirection);
             if (distance < minDistance){
                 minDistance = distance;
-                nearestElevator = candidate;
+                nearestElevator = Optional.of(candidate);
             }
         }
         return nearestElevator;
@@ -67,7 +60,7 @@ public class ElevatorSystem {
                     : candidate.getCurrentFloor() + floor;
     }
 
-    private Elevator findIdleOrRightDirectionElevator(int floor, Direction direction){
+    private Optional<Elevator> findIdleOrRightDirectionElevator(int floor, Direction direction){
         List<Elevator> rightDirectionElevators = elevators.stream()
                 .filter( elevator -> {
                         Direction elevatorDirection = elevator.getDirection();
@@ -76,54 +69,46 @@ public class ElevatorSystem {
                         return elevatorDirection.equals(Direction.IDLE) || (elevatorDirection.equals(direction) && isRightDirection);
                 })
                 .toList();
-        return rightDirectionElevators.isEmpty() ? null : findTheNearestElevator(rightDirectionElevators, floor, true);
+        return findTheNearestElevator(rightDirectionElevators, floor, true);
     }
 
-    private Elevator findAnyElevator(int floor){
+    private Optional<Elevator> findAnyElevator(int floor){
         return findTheNearestElevator(elevators, floor, false);
     }
 
-    public void callTheElevator(int currentFloor, Direction direction){
+    public void callTheElevator(int floor, Direction direction){
         if (Direction.UP.equals(direction)) {
-            addWaitingPersonForUp(currentFloor);
+            addWaitingPersonForUp(floor);
         } else {
-            addWaitingPersonForDown(currentFloor);
+            addWaitingPersonForDown(floor);
         }
 
-        Elevator pickedElevator = findIdleElevatorOnTheFloor(currentFloor);
+        var pickedElevator = findIdleElevatorOnTheFloor(floor)
+                .orElse(findIdleOrRightDirectionElevator(floor, direction).orElse(findAnyElevator(floor).orElse(null)));
 
         if (pickedElevator != null){
-            pickedElevator.addStop(currentFloor);
-            pickedElevator.setDirection(direction);
-            return;
-        }
-
-        pickedElevator = findIdleOrRightDirectionElevator(currentFloor, direction);
-
-        if (pickedElevator != null){
-            pickedElevator.addStop(currentFloor);
+            pickedElevator.addStop(floor);
             if (Direction.IDLE.equals(pickedElevator.getDirection())){
                 pickedElevator.setDirection(direction);
             }
-            return;
         }
 
-        pickedElevator = findAnyElevator(currentFloor);
-
-        if (pickedElevator != null){
-            pickedElevator.addStop(currentFloor);
-        }
     }
 
     public void askForTheFloor(Elevator elevator, int numberOfPeopleWaiting){
         for (int i = 0; i < numberOfPeopleWaiting; i++) {
             System.out.println(Command.PICK_THE_FlOOR);
-            int pickedFloor = scanner.nextInt();
-            if (pickedFloor < 0 || pickedFloor > numberOfFloors){
-                System.out.println("Wrong floor number");
-                continue;
+            try{
+                int pickedFloor = scanner.nextInt();
+                if (pickedFloor < 0 || pickedFloor > numberOfFloors){
+                    throw new IllegalArgumentException("Invalid floor number - should be between 0 and " + numberOfFloors);
+                }
+                elevator.addStop(pickedFloor);
+            } catch (NumberFormatException e) {
+                System.out.println("Invalid first argument - should be the number provided\n");
+            } catch (IllegalArgumentException e){
+                System.out.println(e.getMessage());
             }
-            elevator.addStop(pickedFloor);
         }
     }
 
